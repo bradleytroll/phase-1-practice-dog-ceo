@@ -1,67 +1,63 @@
-console.log('%c HI', 'color: firebrick')
-document.addEventListener('DOMContentLoaded', () => {
-    const imgUrl = "https://dog.ceo/api/breeds/image/random/4";
-    const breedUrl = "https://dog.ceo/api/breeds/list/all";
-    const dogImageContainer = document.getElementById('dog-image-container');
-    const dogBreedsList = document.getElementById('dog-breeds');
-    const breedDropdown = document.getElementById('breed-dropdown');
+document.addEventListener('DOMContentLoaded', function() {
+  const imgUrl = "https://dog.ceo/api/breeds/image/random/4";
+  const breedUrl = "https://dog.ceo/api/breeds/list/all";
+  let breeds = [];
 
-    // Fetch and display dog images
-    fetch(imgUrl)
-      .then(response => response.json())
-      .then(data => {
-        data.message.forEach(imageUrl => {
-          const imageElement = document.createElement('img');
-          imageElement.src = imageUrl;
-          dogImageContainer.appendChild(imageElement);
-        });
-      })
-      .catch(error => {
-        console.log('Error fetching dog images:', error);
-      });
 
-    // Fetch and display dog breeds
-    fetch(breedUrl)
-      .then(response => response.json())
-      .then(data => {
-        const breeds = data.message;
-        for (const breed in breeds) {
-          if (breeds[breed].length > 0) {
-            breeds[breed].forEach(subBreed => {
-              const breedItem = document.createElement('li');
-              breedItem.textContent = `${subBreed} ${breed}`;
-              dogBreedsList.appendChild(breedItem);
-            });
-          } else {
-            const breedItem = document.createElement('li');
-            breedItem.textContent = breed;
-            dogBreedsList.appendChild(breedItem);
-          }
-        }
-      })
-      .catch(error => {
-        console.log('Error fetching dog breeds:', error);
-      });
+  // Fetch dog images
+  fetch(imgUrl)
+    .then(res => res.json())
+    .then(data => data.message.forEach(dogImage => renderImage(dogImage)));
 
-    // Change font color on click
-    dogBreedsList.addEventListener('click', (event) => {
-      const clickedLi = event.target;
-      clickedLi.style.color = 'blue'; // Change the color to your preferred choice
+  // Fetch dog breeds
+  fetch(breedUrl)
+    .then(res => res.json())
+    .then(data => {
+      breeds = Object.keys(data.message);
+      renderBreeds(breeds);
     });
 
-    // Filter breeds based on selected letter
-    breedDropdown.addEventListener('change', () => {
-      const selectedLetter = breedDropdown.value;
+  // DOM selectors
+  const dropdown = document.getElementById('dropdown');
+  console.log(dropdown);
 
-      // Show/hide breeds based on selected letter
-      const breedItems = dogBreedsList.getElementsByTagName('li');
-      for (const breedItem of breedItems) {
-        const breedName = breedItem.textContent;
-        if (breedName.startsWith(selectedLetter)) {
-          breedItem.style.display = 'block';
-        } else {
-          breedItem.style.display = 'none';
-        }
-      }
+  const ul = document.querySelector('#dog-breeds'); 
+
+  // Event listener
+  dropdown.addEventListener('change', handleChange);
+
+  // Render functions
+  function renderImage(dogImage) {
+    const container = document.querySelector("#dog-image-container");
+    const image = document.createElement('img');
+    image.src = dogImage;
+    container.appendChild(image);
+  }
+
+  function renderBreeds(breeds) {
+    
+    breeds.forEach(breed => {
+      const li = document.createElement('li');
+      li.innerText = breed;
+      ul.append(li);
+      li.addEventListener('click', changeColor);
     });
-  });
+  }
+
+  // Callback functions
+  function changeColor(e) {
+    e.target.style.color = "red";
+  }
+
+  function handleChange(e) {
+    let letter = e.target.value;
+    let filterBreeds = breeds.filter(breed => breed.startsWith(letter))
+    ul.innerHTML = ''
+    // Can also use ul.textContent = ''. Either way, you're essentially wiping out the entire list and then the renderBreeds function renders only the targeted breeds by first letter.
+    renderBreeds(filterBreeds)
+  }
+});
+
+
+
+
